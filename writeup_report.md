@@ -12,10 +12,10 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./center.png "Center Lane Driving"
-[image2]: ./recover.png "Recovery Driving"
+[image2]: ./recovery.png "Recovery Driving"
 [image3]: ./specific.png "Recovery Driving on a Specific Corner"
 [image4]: ./normal.jpg "Normal Image from Front Camera"
-[image5]: ./flipped.png "Flipped Image from Front Camera"
+[image5]: ./flipped.jpg "Flipped Image from Front Camera"
 
 ---
 ###Files Submitted & Code Quality
@@ -42,18 +42,18 @@ The model.py file contains the code for training and saving the convolution neur
 
 ####1. An appropriate model architecture has been employed
 
-My model is almost the same to the NVIDIA network which is not so deep (means fewer learning time) but performs good enough for this project.
+My model is almost the same to the NVIDIA network (shown in the course) which is not so deep (means fewer learning time) but performs good enough for this project.
 It consists of a convolution neural network with 5x5 or 3x3 filter sizes and depths between 24 and 64 (model.py lines 91-95) 
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 46). 
+The model includes RELU layers to introduce nonlinearity, and the data is normalized in the model using a Keras lambda layer (code line 46).
 
 ####2. Attempts to reduce overfitting in the model
 
 The model contains dropout layers in order to reduce overfitting (model.py lines 100).
 
-At first, I introduced more than 1 layer, however, it turns out that it does not perform well. Therefore I limited to use the Dropout layer only at the last of the fully-connected layers.
+At first, I introduced more than 1 layer, however, it turns out that multiple Dropout layers do not contribute to perform better (at least with this number of images or epochs). Therefore I limited to use the Dropout layer only at the last of the fully-connected layers.
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 114-115). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 114-115). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track as can be seen in [video](./run1.mp4)
 
 ####3. Model parameter tuning
 
@@ -144,4 +144,4 @@ After the careful collection process, I had around 10k number of data points.
 
 I finally randomly shuffled the data set and put 20% of the data into a validation set. 
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. 3 was enough for the number of epochs, empirically. I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. Empirically, 3 was enough for the number of epochs. I used an adam optimizer so that manually training the learning rate wasn't necessary.
