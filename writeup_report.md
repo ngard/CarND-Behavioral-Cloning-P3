@@ -53,7 +53,7 @@ The model contains dropout layers in order to reduce overfitting (model.py lines
 
 At first, I introduced more than 1 layer, however, it turns out that multiple Dropout layers do not contribute to perform better (at least with this number of images or epochs). Therefore I limited to use the Dropout layer only at the last of the fully-connected layers.
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 114-115). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track as can be seen in [video](./run1.mp4)
+The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 114-115). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track as can be seen in the [video](./video.mp4).
 
 ####3. Model parameter tuning
 
