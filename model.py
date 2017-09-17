@@ -1,42 +1,68 @@
 import csv, cv2
 import numpy as np
 import os
+from PIL import Image
+import sklearn
 
-cv2.namedWindow('window')
+import random
+
+train_samples = []
+validation_samples = []
+
+def sample_generator(validation_rate = 0.2):
+    record_path = "./record/"
+    for record in os.listdir(record_path):
+        with open(record_path + record + "/driving_log.csv") as csvfile:
+            reader = csv.reader(csvfile)
+            for line in reader:
+                source_path = line[0]
+                filename = source_path.split('/')[-1]
+                image_path = record_path + record + "/IMG/" + filename
+                #image = cv2.imread(current_path)
+                measurement = float(line[3])
+                if random.random() <= validation_rate:
+                    validation_samples.append((image_path,measurement))
+                else:
+                    train_samples.append((image_path,measurement))
+
+sample_generator()
+                    
+batch_size = 64
+if batch_size%2 != 0:
+    print("batch size should be even number.")
+    quit()
+
+def generator(samples):    
+    num_samples = len(samples)
+    while 1: # Loop forever so the generator never terminates
+        random.shuffle(samples)
+        for offset in range(0, num_samples, batch_size//2):
+            batch_samples = samples[offset:offset+batch_size//2]
+            
+            images = []
+            angles = []
+            for batch_sample in batch_samples:
+                file_path = batch_sample[0]
+                center_image = np.asarray(Image.open(file_path))
+                center_angle = float(batch_sample[1])
+                images.append(center_image)
+                angles.append(center_angle)
+                flipped_image = np.fliplr(center_image)
+                flipped_angle = -1 * center_angle
+                images.append(flipped_image)
+                angles.append(flipped_angle)
         
-images = []
-measurements = []
+            X_train = np.array(images)
+            y_train = np.array(angles)
+            yield sklearn.utils.shuffle(X_train, y_train)
 
-def add_data(image,measurement):
-    # cv2.imshow('window',image)
-    # cv2.waitKey(1)
-    images.append(image)
-    measurements.append(measurement)
+# compile and train the model using the generator function
+train_generator = generator(train_samples)
+validation_generator = generator(validation_samples)
 
-record_path = "./record/"
+is_train = True
 
-for record in os.listdir(record_path):
-    with open(record_path + record + "/driving_log.csv") as csvfile:
-        reader = csv.reader(csvfile)
-        for line in reader:
-            source_path = line[0]
-            filename = source_path.split('/')[-1]
-            current_path = record_path + record + "/IMG/" + filename
-            image = cv2.imread(current_path)
-            measurement = float(line[3])
-            add_data(image,measurement)
-            image_flipped = np.fliplr(image)
-            measurement_flipped = -measurement
-            add_data(image_flipped,measurement_flipped)
-    
-cv2.destroyAllWindows()
-
-is_train = False
-
-image_shape = images[0].shape
-    
-X_train = np.array(images)
-y_train = np.array(measurements)
+image_shape = (160,320,3)
 
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Conv2D, MaxPool2D, Dropout, Cropping2D
@@ -112,6 +138,11 @@ NVIDIA(model)
 
 if is_train:
     model.compile(optimizer='adam',loss='mse')
-    model.fit(X_train, y_train, batch_size=16, epochs=3, validation_split=0.2, shuffle=True)
+    #model.fit(X_train, y_train, batch_size=16, epochs=3, validation_split=0.2, shuffle=True)
 
+    model.fit_generator(train_generator, (len(train_samples)*2-1)//batch_size+1,
+                        validation_data=validation_generator,
+                        validation_steps=(len(validation_samples)*2-1)//batch_size+1,
+                        epochs=3)
+    
     model.save('model.h5')
